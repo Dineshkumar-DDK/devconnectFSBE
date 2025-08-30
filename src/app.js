@@ -1,6 +1,7 @@
 const express = require('express');
 const connectDb = require('./config/db');
 const User = require('./models/user');
+const { validateSignUpData } = require('./utils/validation');
 require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT
@@ -25,13 +26,21 @@ app.get("/login", (req, res, next) => {
 
 })
 
-app.post("/user", async (req, res, next) => {
+app.post("/signup", async (req, res) => {
     try {
+        
+        validateSignUpData(req.body)
         const user = new User(req.body)
         await user.save();
         res.status(200).send("User added successfully");
     }
     catch (err) {
-        res.status(500).send("Server Error" + err)
+        res.status(500).send(err.message)
     }
 })
+
+// handle global err
+app.use((req,res) => {
+    res.status(500).send("Something broke!");
+});
+
